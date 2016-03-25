@@ -92,11 +92,10 @@ class Api:
    def Send_Preset_Function(self, preset_number, speed):
       # Sends a preset command to a device
       if type <= 4:
-         data = [0xBB, preset_number, speed, 0x44]
-         send_bytes_action(data)
+         self.Send_Bytes(0xBB, preset_number, speed, 0x44)
       else:
-         data = [0x61, preset_number, speed, 0x0F]
-         send_bytes_action(data, calc_checksum(data))
+         message = [0x61, preset_number, speed, 0x0F]
+         self.Send_Bytes(*(message+[self.Calculate_Checksum(message)]))
 
    def Calculate_Checksum(self, bytes):
       return sum(bytes) & 0xFF
@@ -106,6 +105,3 @@ class Api:
       message_length = len(bytes)
       self.s.send(struct.pack("B"*message_length, *bytes))
       self.s.close
-
-x = Api("10.0.1.166", 4)
-x.Update_Device(255,255,255,None,None)
