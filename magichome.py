@@ -64,27 +64,27 @@ class Api:
       if self.device_type <= 1:
          # Update an RGB or an RGB + WW device
          message = [0x31, r, g, b, white1, 0x00, 0x0f]
-         self.Send_Bytes(message, Calculate_Checksum(message))
+         self.Send_Bytes(*(message+[self.Calculate_Checksum(message)]))
       elif self.device_type == 2:
          # Update an RGB + WW + CW device
          message = [0x31, r, g, b, white1, white2, 0x0f, 0x0f]
-         self.Send_Bytes(message, Calculate_Checksum(message))
+         self.Send_Bytes(*(message+[self.Calculate_Checksum(message)]))
       elif self.device_type == 3:
          # Update the white, or color, of a bulb
-         if white1 != 'null':
+         if white1 != None:
             message = [0x31, 0x00, 0x00, 0x00, white1, 0x0f, 0x0f]
-            self.Send_Bytes(message, Calculate_Checksum(message))
+            self.Send_Bytes(*(message+[self.Calculate_Checksum(message)]))
          else:
             message = [0x31, r, g, b, 0x00, 0xf0, 0x0f]
-            self.Send_Bytes(message, Calculate_Checksum(message))
+            self.Send_Bytes(*(message+[self.Calculate_Checksum(message)]))
       elif self.device_type == 4:
          # Update the white, or color, of a legacy bulb
-         if white1 != 'null':
+         if white1 != None:
             message = [0x56, 0x00, 0x00, 0x00, w, 0x0f, 0xaa]
-            self.Send_Bytes(message, Calculate_Checksum(message))
+            self.Send_Bytes(*(message+[self.Calculate_Checksum(message)]))
          else:
             message = [0x56, r, g, b, 0x00, 0xf0, 0xaa]
-            self.Send_Bytes(message, Calculate_Checksum(message))
+            self.Send_Bytes(*(message+[self.Calculate_Checksum(message)]))
       else:
          # Incompatible device received
          print "Incompatible device type received..."
@@ -106,3 +106,6 @@ class Api:
       message_length = len(bytes)
       self.s.send(struct.pack("B"*message_length, *bytes))
       self.s.close
+
+x = Api("10.0.1.166", 4)
+x.Update_Device(255,255,255,None,None)
