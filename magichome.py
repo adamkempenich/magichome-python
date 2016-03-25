@@ -53,7 +53,8 @@ class Api:
 
    def Status(type):
       # Gets the current status of a device
-
+      data = s.recv(14)
+      Send_Bytes(0x81, 0x8A, 0x8B, 0x96)
 
    def Update_Device(type, r, g, b, white1, white2):
       # Updates a device based upon what we're sending to it
@@ -95,20 +96,31 @@ class Api:
          send_bytes_action(*data, calc_checksum(data))
 
    def Calculate_Checksum(bytes):
+      return bytes.reduce(:+) % 0x100
 
    def Send_Bytes(*bytes):
+      s.send(struct.pack(c, bytes))
 
    def Send_Bytes_Action(*bytes):
+      Socket_Action { Send_Bytes(*bytes) }
 
    def Create_Socket(ip):
-      BUFFER_SIZE = 1024
-      MESSAGE = "Hello, World!"
-
-      s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+      s.close if s is !None
+      global s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
       s.connect((ip, TCP_PORT))
+
       s.send(MESSAGE)
-      data = s.recv(BUFFER_SIZE)
+      
       s.close()
 
 
    def Socket_Action:
+
+
+
+
+
+
+
+
+
