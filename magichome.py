@@ -37,90 +37,72 @@ It currently supports:
 
 """
 
-import socket
-import csv
+import socket, csv, struct
 
-class Api:
-   API_PORT = 5577
-   
-   def On(type):
+class Api:   
+   def __init__(self, device_ip, device_type):
+      self.device_ip = device_ip
+      self.device_type = device_type
+      self.API_PORT = 5577
+      self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+   def On(self):
       #Turns a device on
-      Send_Bytes(0x71, 0x23, 0x0F, 0xA3) if type <= 4 else Send_Bytes(0xCC, 0x23, 0x33)
+      self.Send_Bytes(0x71, 0x23, 0x0F, 0xA3) if self.device_type < 4 else self.Send_Bytes(0xCC, 0x23, 0x33)
 
-   def Off(type):
+   def Off(self):
       #Turns a device off
-      Send_Bytes(0x71, 0x24, 0x0F, 0xA4) if type <= 4 else Send_Bytes(0xCC, 0x24, 0x33)
+      self.Send_Bytes(device_ip, 0x71, 0x24, 0x0F, 0xA4) if self.device_type < 4 else self.Send_Bytes(0xCC, 0x24, 0x33)
 
-   def Status(type):
+   def Status(self):
       # Gets the current status of a device
       data = s.recv(14)
-      Send_Bytes(0x81, 0x8A, 0x8B, 0x96)
+      self.Send_Bytes(device_ip, 0x81, 0x8A, 0x8B, 0x96)
 
-   def Update_Device(type, r, g, b, white1, white2):
+   def Update_Device(self, r, g, b, white1, white2):
       # Updates a device based upon what we're sending to it
-      if type <= 1:
+      if self.device_type <= 1:
          # Update an RGB or an RGB + WW device
          message = [0x31, r, g, b, white1, 0x00, 0x0f]
-         Send_Bytes(*message, Calculate_Checksum(message))
-      elif type = 2:
+         self.Send_Bytes(message, Calculate_Checksum(message))
+      elif self.device_type == 2:
          # Update an RGB + WW + CW device
          message = [0x31, r, g, b, white1, white2, 0x0f, 0x0f]
-         Send_Bytes(*message, Calculate_Checksum(message))
-      elif type = 3:
+         self.Send_Bytes(message, Calculate_Checksum(message))
+      elif self.device_type == 3:
          # Update the white, or color, of a bulb
          if white1 != 'null':
             message = [0x31, 0x00, 0x00, 0x00, white1, 0x0f, 0x0f]
-            Send_Bytes(*message, Calculate_Checksum(message))
+            self.Send_Bytes(message, Calculate_Checksum(message))
          else:
             message = [0x31, r, g, b, 0x00, 0xf0, 0x0f]
-            Send_Bytes(*message, Calculate_Checksum(message))
-      elif type = 4:
+            self.Send_Bytes(message, Calculate_Checksum(message))
+      elif self.device_type == 4:
          # Update the white, or color, of a legacy bulb
          if white1 != 'null':
             message = [0x56, 0x00, 0x00, 0x00, w, 0x0f, 0xaa]
-            Send_Bytes(*message, Calculate_Checksum(message))
+            self.Send_Bytes(message, Calculate_Checksum(message))
          else:
             message = [0x56, r, g, b, 0x00, 0xf0, 0xaa]
-            Send_Bytes(*message, Calculate_Checksum(message))
+            self.Send_Bytes(message, Calculate_Checksum(message))
       else:
          # Incompatible device received
          print "Incompatible device type received..."
 
-   def Send_Preset_Function(type, preset_number, speed):
+   def Send_Preset_Function(self, preset_number, speed):
       # Sends a preset command to a device
       if type <= 4:
          data = [0xBB, preset_number, speed, 0x44]
-         send_bytes_action(*data)
+         send_bytes_action(data)
       else:
          data = [0x61, preset_number, speed, 0x0F]
-         send_bytes_action(*data, calc_checksum(data))
+         send_bytes_action(data, calc_checksum(data))
 
-   def Calculate_Checksum(bytes):
-      return bytes.reduce(:+) % 0x100
+   def Calculate_Checksum(self, bytes):
+      return sum(bytes) & 0xFF
 
-   def Send_Bytes(*bytes):
-      s.send(struct.pack(c, bytes))
-
-   def Send_Bytes_Action(*bytes):
-      Socket_Action { Send_Bytes(*bytes) }
-
-   def Create_Socket(ip):
-      s.close if s is !None
-      global s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-      s.connect((ip, TCP_PORT))
-
-      s.send(MESSAGE)
-      
-      s.close()
-
-
-   def Socket_Action:
-
-
-
-
-
-
-
-
-
+   def Send_Bytes(self, *bytes):
+      self.s.connect((self.device_ip, self.API_PORT))
+      message_length = len(bytes)
+      self.s.send(struct.pack("B"*message_length, *bytes))
+      self.s.close
