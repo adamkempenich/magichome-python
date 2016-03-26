@@ -44,10 +44,18 @@ class MagicHome_Wifi_Api:
       self.device_ip = device_ip
       self.device_type = device_type
       self.API_PORT = 5577
-      self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-      self.s.connect((self.device_ip, self.API_PORT))
       self.latest_connection = datetime.datetime.now()
       self.keep_alive = keep_alive
+      self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+      self.s.settimeout(3)
+      try:
+         print "Trying first coneection"
+         self.s.connect((self.device_ip, self.API_PORT))
+      except socket.error, exc:
+         print "Caught exception socket.error : %s" % exc
+         if self.s: 
+             self.s.close() 
+         
 
    def On(self):
       #Turns a device on
@@ -124,11 +132,16 @@ class MagicHome_Wifi_Api:
       # Sends commands to the device
       # If the device hasn't been communicated to in 5 minutes, reestablish the connection
       check_connection_time = abs((self.latest_connection-datetime.datetime.now()).total_seconds())
-
-      if check_connection_time >= 290:
-         self.s.connect((self.device_ip, self.API_PORT))
-      message_length = len(bytes)
-      self.s.send(struct.pack("B"*message_length, *bytes))
-      # Close the connection unless requested not to 
-      if self.keep_alive == False:
-         self.s.close
+      try:
+         print "Trying second coneection"
+         if check_connection_time >= 290:
+            self.s.connect((self.device_ip, self.API_PORT))
+         message_length = len(bytes)
+         self.s.send(struct.pack("B"*message_length, *bytes))
+         # Close the connection unless requested not to 
+         if self.keep_alive == False:
+            self.s.close
+      except socket.error, exc:
+         print "Caught exception socket.error : %s" % exc
+         if self.s: 
+             self.s.close()
