@@ -1,4 +1,4 @@
-# magichome-python
+# MagicHome-Python API
 MagicHome Wifi protocol for python.
 
 Copyright 2016, Adam Kempenich. Questions? Comments? Feedback of any kind? Find me on GITHUB, @AdamKempenich
@@ -31,6 +31,25 @@ It currently supports:
   *    2: RGB+WW+CW
   *    3: Bulb (v.4+)
   *    4: Bulb (v.3-)
-  *    (Higher numbers reserved for future use)
+      (Higher numbers reserved for future use)
 
-   Functions accept integers 0-255 as parameters, or their equivalent byte format.
+   Functions accept integers 0-255 as parameters.
+   
+To create a new instance of the API, use the following terminology:
+`My_New_API = MagicHome_Wifi_Api([IP Address],[Device Type (from above)])`
+And then call its functions in the following manner:
+To turn a device on:
+`My_New_API.On`
+And similarly, to turn it off:
+`My_New_API.Off`
+To update a colored device, send R,G, and B to it.
+`My_New_API.Update_Device(R,G,B)`
+And if that device supports WW/CW (or both):
+`My_New_API.Update_Device(R,G,B,WW,CW)`
+BUT, if you want to update a bulb's white level, send R,G,B AND W... only W's level will be used.
+`My_New_API.Update_Device(R,G,B,W)`
+To Update a Bulb's color, you don't need to send the W parameter.
+Finally, to send a preset command:
+`My_New_API.Send_Preset_Function(25, 100)`
+Presets can range from 0x25 (int 37) to 0x38 (int 56), anything outside of this will be rounded up or down.
+A speed of 100% is fastest, and 0% is super duper slow.
