@@ -37,14 +37,17 @@ It currently supports:
 
 """
 
-import socket, csv, struct
+import socket, csv, struct, datetime
 
-class Api:   
-   def __init__(self, device_ip, device_type):
+class MagicHome_Wifi_Api:   
+   def __init__(self, device_ip, device_type, keep_alive=True):
       self.device_ip = device_ip
       self.device_type = device_type
       self.API_PORT = 5577
       self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+      self.s.connect((self.device_ip, self.API_PORT))
+      self.latest_connection = datetime.datetime.now()
+      self.keep_alive = keep_alive
 
    def On(self):
       #Turns a device on
@@ -59,38 +62,54 @@ class Api:
       data = s.recv(14)
       self.Send_Bytes(device_ip, 0x81, 0x8A, 0x8B, 0x96)
 
-   def Update_Device(self, r, g, b, white1, white2):
+   def Update_Device(self, r=0, g=0, b=0, white1=None, white2=None):
       # Updates a device based upon what we're sending to it
+      # Values are excepted as integers between 0-255.
+      # Whites can have a value of None.
+
       if self.device_type <= 1:
          # Update an RGB or an RGB + WW device
+         white1 = self.Check_Number_Range(white1)
          message = [0x31, r, g, b, white1, 0x00, 0x0f]
          self.Send_Bytes(*(message+[self.Calculate_Checksum(message)]))
+
       elif self.device_type == 2:
          # Update an RGB + WW + CW device
-         message = [0x31, r, g, b, white1, white2, 0x0f, 0x0f]
+         message = [0x31, self.Check_Number_Range(r), self.Check_Number_Range(g), self.Check_Number_Range(b), self.Check_Number_Range(white1), self.Check_Number_Range(white2), 0x0f, 0x0f]
          self.Send_Bytes(*(message+[self.Calculate_Checksum(message)]))
+
       elif self.device_type == 3:
          # Update the white, or color, of a bulb
          if white1 != None:
-            message = [0x31, 0x00, 0x00, 0x00, white1, 0x0f, 0x0f]
+            message = [0x31, 0x00, 0x00, 0x00, self.Check_Number_Range(white1), 0x0f, 0x0f]
             self.Send_Bytes(*(message+[self.Calculate_Checksum(message)]))
          else:
-            message = [0x31, r, g, b, 0x00, 0xf0, 0x0f]
+            message = [0x31, self.Check_Number_Range(r), self.Check_Number_Range(g), self.Check_Number_Range(b), 0x00, 0xf0, 0x0f]
             self.Send_Bytes(*(message+[self.Calculate_Checksum(message)]))
+
       elif self.device_type == 4:
          # Update the white, or color, of a legacy bulb
          if white1 != None:
-            message = [0x56, 0x00, 0x00, 0x00, w, 0x0f, 0xaa]
+            message = [0x56, 0x00, 0x00, 0x00, self.Check_Number_Range(white1), 0x0f, 0xaa, 0x56, 0x00, 0x00, 0x00, self.Check_Number_Range(white1), 0x0f, 0xaa]
             self.Send_Bytes(*(message+[self.Calculate_Checksum(message)]))
          else:
-            message = [0x56, r, g, b, 0x00, 0xf0, 0xaa]
+            message = [0x56, self.Check_Number_Range(r), self.Check_Number_Range(g), self.Check_Number_Range(b), 0x00, 0xf0, 0xaa]
             self.Send_Bytes(*(message+[self.Calculate_Checksum(message)]))
       else:
          # Incompatible device received
          print "Incompatible device type received..."
 
+   def Check_Number_Range(self, number):
+      if number < 0:
+         return 0 
+      elif number > 255:
+         return 255
+      else:
+         return number
+
    def Send_Preset_Function(self, preset_number, speed):
       # Sends a preset command to a device
+      # Presets can range from 0x25 (int 37) to 0x38 (int 56)
       if type <= 4:
          self.Send_Bytes(0xBB, preset_number, speed, 0x44)
       else:
@@ -98,10 +117,18 @@ class Api:
          self.Send_Bytes(*(message+[self.Calculate_Checksum(message)]))
 
    def Calculate_Checksum(self, bytes):
+      # Calculates the checksum from an array of bytes
       return sum(bytes) & 0xFF
 
    def Send_Bytes(self, *bytes):
-      self.s.connect((self.device_ip, self.API_PORT))
+      # Sends commands to the device
+      # If the device hasn't been communicated to in 5 minutes, reestablish the connection
+      check_connection_time = abs((self.latest_connection-datetime.datetime.now()).total_seconds())
+
+      if check_connection_time >= 290:
+         self.s.connect((self.device_ip, self.API_PORT))
       message_length = len(bytes)
       self.s.send(struct.pack("B"*message_length, *bytes))
-      self.s.close
+      # Close the connection unless requested not to 
+      if self.keep_alive == False:
+         self.s.close
