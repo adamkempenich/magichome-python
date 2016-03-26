@@ -118,7 +118,16 @@ class MagicHome_Wifi_Api:
    def Send_Preset_Function(self, preset_number, speed):
       # Sends a preset command to a device
       # Presets can range from 0x25 (int 37) to 0x38 (int 56)
-      if type <= 4:
+      if preset_number < 37:
+         preset_number = 37
+      if preset_number > 56:
+         preset_number = 56
+      if speed < 0:
+         speed = 0
+      if speed > 100:
+         speed = 100
+
+      if type == 4:
          self.Send_Bytes(0xBB, preset_number, speed, 0x44)
       else:
          message = [0x61, preset_number, speed, 0x0F]
@@ -131,7 +140,7 @@ class MagicHome_Wifi_Api:
    def Send_Bytes(self, *bytes):
       # Sends commands to the device
       # If the device hasn't been communicated to in 5 minutes, reestablish the connection
-      check_connection_time = abs((self.latest_connection-datetime.datetime.now()).total_seconds())
+      check_connection_time = datetime.datetime.now()-self.latest_connection.total_seconds())
       try:
          print "Trying second coneection"
          if check_connection_time >= 290:
@@ -144,4 +153,4 @@ class MagicHome_Wifi_Api:
       except socket.error, exc:
          print "Caught exception socket.error : %s" % exc
          if self.s: 
-             self.s.close()
+             self.s.close() 
