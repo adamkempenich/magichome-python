@@ -35,21 +35,21 @@ It currently supports:
 
    Functions accept integers 0-255 as parameters.
    
-To create a new instance of the API, use the following terminology:
-`My_New_API = MagicHome_Wifi_Api([IP Address],[Device Type (from above)])`
-And then call its functions in the following manner:
-To turn a device on:
-`My_New_API.On`
-And similarly, to turn it off:
-`My_New_API.Off`
-To update a colored device, send R,G, and B to it.
-`My_New_API.Update_Device(R,G,B)`
-And if that device supports WW/CW (or both):
+To create a new instance of the API, use the following terminology:<br/>
+`My_New_API = MagicHome_Wifi_Api([IP Address],[Device Type (from above)])`<br/>
+And then call its functions in the following manner:<br/>
+To turn a device on:<br/>
+`My_New_API.On`<br/>
+And similarly, to turn it off:<br/>
+`My_New_API.Off`<br/>
+To update a colored device, send R,G, and B to it.<br/>
+`My_New_API.Update_Device(R,G,B)`<br/>
+And if that device supports WW/CW (or both):<br/>
 `My_New_API.Update_Device(R,G,B,WW,CW)`
-BUT, if you want to update a bulb's white level, send R,G,B AND W... only W's level will be used.
-`My_New_API.Update_Device(R,G,B,W)`
-To Update a Bulb's color, you don't need to send the W parameter.
-Finally, to send a preset command:
-`My_New_API.Send_Preset_Function(25, 100)`
-Presets can range from 0x25 (int 37) to 0x38 (int 56), anything outside of this will be rounded up or down.
+BUT, if you want to update a bulb's white level, send R,G,B AND W... only W's level will be used.<br/>
+`My_New_API.Update_Device(R,G,B,W)`<br/>
+To Update a Bulb's color, you don't need to send the W parameter.<br/>
+Finally, to send a preset command:<br/>
+`My_New_API.Send_Preset_Function(25, 100)`<br/>
+Presets can range from 0x25 (int 37) to 0x38 (int 56), anything outside of this will be rounded up or down.<br/>
 A speed of 100% is fastest, and 0% is super duper slow.
