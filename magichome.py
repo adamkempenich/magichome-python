@@ -18,7 +18,7 @@ It currently supports:
    Setting colors (+ WW + CW) in compatible devices
    Sending preset functions
 
-	
+   
 ##### Tasks:
    Initial device setup via UDP.
    Custom commands (I know how it works ... just not a priority to implement currently.)
@@ -49,7 +49,7 @@ class MagicHome_Wifi_Api:
       self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
       self.s.settimeout(3)
       try:
-         print "Trying first coneection"
+         print "Establishing connection with the device."
          self.s.connect((self.device_ip, self.API_PORT))
       except socket.error, exc:
          print "Caught exception socket.error : %s" % exc
@@ -63,12 +63,12 @@ class MagicHome_Wifi_Api:
 
    def Off(self):
       #Turns a device off
-      self.Send_Bytes(device_ip, 0x71, 0x24, 0x0F, 0xA4) if self.device_type < 4 else self.Send_Bytes(0xCC, 0x24, 0x33)
+      self.Send_Bytes(0x71, 0x24, 0x0F, 0xA4) if self.device_type < 4 else self.Send_Bytes(0xCC, 0x24, 0x33)
 
    def Status(self):
       # Gets the current status of a device
       data = s.recv(14)
-      self.Send_Bytes(device_ip, 0x81, 0x8A, 0x8B, 0x96)
+      self.Send_Bytes(0x81, 0x8A, 0x8B, 0x96)
 
    def Update_Device(self, r=0, g=0, b=0, white1=None, white2=None):
       # Updates a device based upon what we're sending to it
@@ -140,10 +140,10 @@ class MagicHome_Wifi_Api:
    def Send_Bytes(self, *bytes):
       # Sends commands to the device
       # If the device hasn't been communicated to in 5 minutes, reestablish the connection
-      check_connection_time = datetime.datetime.now()-self.latest_connection.total_seconds())
+      check_connection_time = (datetime.datetime.now()-self.latest_connection).total_seconds()
       try:
-         print "Trying second coneection"
          if check_connection_time >= 290:
+            print "Connection timed out, reestablishing."
             self.s.connect((self.device_ip, self.API_PORT))
          message_length = len(bytes)
          self.s.send(struct.pack("B"*message_length, *bytes))
