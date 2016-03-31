@@ -69,10 +69,10 @@ class MagicHome_Wifi_Api:
       # Gets the current status of a device
       if self.device_type ==2:
          self.Send_Bytes(0x81, 0x8A, 0x8B, 0x96)
-         return s.recv(15)
+         return self.s.recv(15)
       else:
          self.Send_Bytes(0x81, 0x8A, 0x8B, 0x96)
-         return s.recv(14)
+         return self.s.recv(14)
          
    def Update_Device(self, r=0, g=0, b=0, white1=None, white2=None):
       # Updates a device based upon what we're sending to it
