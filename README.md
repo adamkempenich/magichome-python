@@ -3,6 +3,8 @@ MagicHome Wifi protocol for Python.
 
 This utility was designed for use with devices compatible with the MagicHome Wifi app.
 
+##### This project is inactive and I am not working on it. I will gladly review and merge pull requests, though!
+
 It currently supports:
 * Bulbs (Firmware v.4 and greater)
 * Legacy Bulbs (Firmware v.3 and lower)
